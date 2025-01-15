@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Green Vision</title>
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --primary-dark: #218838;
+            --background-color: #f4f4f9;
+            --card-background: white;
+            --text-primary: #333;
+            --text-secondary: #666;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 1rem;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .property-card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .property-image {
+            position: relative;
+            padding-top: 66.67%;
+            overflow: hidden;
+        }
+
+        .property-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .property-card:hover .property-image img {
+            transform: scale(1.05);
+        }
+
+        .property-details {
+            padding: 1.5rem;
+        }
+
+        .property-title {
+            font-size: 1.5rem;
+            margin: 0 0 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .property-price {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .property-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .show-greenery-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .show-greenery-btn:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+        }
+
+        .show-greenery-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .greenery-results {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .greenery-percentage {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .greenery-image {
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--primary-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            margin: 1rem auto;
+            max-width: 1400px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .filters {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .property-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .power{
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: #343a40;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .property-contact, .property-info, .contact-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+}
+
+/* Styling for .property-contact */
+.property-contact {
+    background-color: #f4f4f4; /* Light gray background */
+    border: 1px solid #ccc; /* Subtle border */
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333; /* Dark gray text */
+    border-radius: 8px;
+}
+
+/* Styling for .property-info */
+.property-info {
+    background-color: #fff; /* White background */
+    border: 1px solid #ddd; /* Light border */
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #555; /* Medium gray text */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Styling for .contact-btn */
+.contact-btn {
+    background-color: #007bff; /* Blue background */
+    color: #fff; /* White text */
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.contact-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: scale(1.05); /* Slightly enlarge button */
+}
+
+.contact-btn:active {
+    background-color: #003d82; /* Even darker blue when clicked */
+    transform: scale(0.95); /* Slightly shrink button */
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Green Real Estate</h1>
+        <p>Discover properties and their surrounding greenery</p>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search properties by location or title..." id="searchInput">
+        </div>
+    </header>
+
+    <div class="filters">
+        <select class="filter-select" id="priceFilter">
+            <option value="">Price Range</option>
+            <option value="0-500000">$0 - $500,000</option>
+            <option value="500000-1000000">$500,000 - $1,000,000</option>
+            <option value="1000000+">$1,000,000+</option>
+        </select>
+        <select class="filter-select" id="bedroomFilter">
+            <option value="">Bedrooms</option>
+            <option value="1">1 Bedroom</option>
+            <option value="2">2 Bedrooms</option>
+            <option value="3">3 Bedrooms</option>
+            <option value="4+">4+ Bedrooms</option>
+        </select>
+        <select class="filter-select" id="sortBy">
+            <option value="">Sort By</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="size-asc">Size: Small to Large</option>
+            <option value="size-desc">Size: Large to Small</option>
+        </select>
+    </div>
+
+    <main id="properties-container">
+        <!-- Properties will be inserted here dynamically -->
+    </main>
+
+    <div class="loading-overlay">
+        <div class="loader"></div>
+    </div>
+<div class="power">
+    <h3>Powered by the Green Vision API, developed by Sushanth Hebri</h3>
+</div>
+    <script>
+        const serverUrl = "https://sushanthh2.pythonanywhere.com";
+
+        // Enhanced property data with more details
+        const properties = [
+            {
+                id: 1,
+                title: "Cozy Apartment in Downtown",
+                description: "Beautiful apartment with modern amenities and stunning city views",
+                latitude: 12.9716,
+                longitude: 77.5946,
+                price: 450000,
+                bedrooms: 2,
+                bathrooms: 2,
+                sqft: 1200,
+                imageUrl: "2.png",
+                type: "Apartment",
+                yearBuilt: 2019
+            },
+            {
+                id: 2,
+                title: "Suburban Family Home",
+                description: "Spacious family home with a large backyard in a quiet neighborhood",
+                latitude: 12.9345,
+                longitude: 77.6156,
+                price: 750000,
+                bedrooms: 4,
+                bathrooms: 3,
+                sqft: 2500,
+                imageUrl: "1.png",
+                type: "House",
+                yearBuilt: 2015
+            },
+            {
+                id: 3,
+                title: "Modern City Loft",
+                description: "Industrial-style loft with high ceilings and premium finishes",
+                latitude: 12.9850,
+                longitude: 77.5633,
+                price: 550000,
+                bedrooms: 1,
+                bathrooms: 2,
+                sqft: 1000,
+                imageUrl: "3.png",
+                type: "Loft",
+                yearBuilt: 2020
+            },
+            {
+                id: 4,
+                title: "Mediterranean-Style Mansion",
+                description: "arched doorways, stucco exteriors, tiled roofs, and elaborate architectural details. Typically includes luxurious features",
+                latitude: 12.9850,
+                longitude: 77.4633,
+                price: 550000,
+                bedrooms: 4,
+                bathrooms: 2,
+                sqft: 2000,
+                imageUrl: "4.png",
+                type: "Loft",
+                yearBuilt: 2020
+            },
+            {
+                id: 5,
+                title: "Modern Apartment Complex",
+                description: "Industrial-style loft with high ceilings and premium finishes",
+                latitude: 12.8850,
+                longitude: 77.5633,
+                price: 550000,
+                bedrooms: 1,
+                bathrooms: 2,
+                sqft: 1000,
+                imageUrl: "5.png",
+                type: "Loft",
+                yearBuilt: 2020
+            },
+            {
+                id: 6,
+                title: "Modern City villa",
+                description: "Indian-style villa with balcony",
+                latitude: 12.9650,
+                longitude: 77.5633,
+                price: 550000,
+                bedrooms: 1,
+                bathrooms: 2,
+                sqft: 1000,
+                imageUrl: "3.png",
+                type: "Loft",
+                yearBuilt: 2020
+            }
+            // Add more properties as needed
+        ];
+
+        let filteredProperties = [...properties];
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0
+            }).format(price);
+        }
+
+        function createPropertyCard(property) {
+            const card = document.createElement('div');
+            card.className = 'property-card';
+            card.innerHTML = `
+                <div class="property-image">
+                    <img src="${property.imageUrl}" alt="${property.title}" loading="lazy">
+                </div>
+                <div class="property-details">
+                    <h2 class="property-title">${property.title}</h2>
+                    <div class="property-price">${formatPrice(property.price)}</div>
+                    <p class="property-description">${property.description}</p>
+                    <div class="property-info">
+                        <div class="info-item">
+                            <span>🛏️ ${property.bedrooms} beds</span>
+                        </div>
+                        <div class="info-item">
+                            <span>🚿 ${property.bathrooms} baths</span>
+                        </div>
+                        <div class="info-item">
+                            <span>📏 ${property.sqft} sqft</span>
+                        </div>
+                    </div>
+                    <div class="property-info">
+                        <div class="info-item">
+                            <span>🏠 ${property.type}</span>
+                        </div>
+                        <div class="info-item">
+                            <span>📅 Built ${property.yearBuilt}</span>
+                        </div>
+                    </div>
+                    <button class="show-greenery-btn" onclick="fetchGreeneryData(${property.id}, ${property.latitude}, ${property.longitude})">
+                        Show Greenery Analysis
+                    </button>
+                  
+                   
+                   
+                          <button class="contact-btn">Contact</button>
+
+                        
+                    <div id="greenery-results-${property.id}" class="greenery-results" style="display: none;">
+                        <div class="greenery-percentage"></div>
+                        <img id="greenery-image-${property.id}" class="greenery-image" loading="lazy">
+                    </div>
+                    <div id="error-${property.id}" class="error-message"></div>
+                </div>
+            `;
+            return card;
+        }
+
+        async function fetchGreeneryData(propertyId, latitude, longitude) {
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            const button = document.querySelector(`button[onclick*="${propertyId}"]`);
+            const resultsDiv = document.getElementById(`greenery-results-${propertyId}`);
+            const percentageDiv = resultsDiv.querySelector('.greenery-percentage');
+            const imageElement = document.getElementById(`greenery-image-${propertyId}`);
+            const errorDiv = document.getElementById(`error-${propertyId}`);
+
+            button.disabled = true;
+            button.textContent = 'Analyzing...';
+            loadingOverlay.style.display = 'flex';
+            errorDiv.textContent = '';
+            resultsDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(
+                    `${serverUrl}/greenery_percentage?latitude=${latitude}&longitude=${longitude}`
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch greenery data');
+                }
+
+                const data = await response.json();
+
+                if (data.percentage_greenery !== undefined) {
+                    const percentage = data.percentage_greenery.toFixed(2);
+                    percentageDiv.textContent = `This area has ${percentage}% greenery coverage`;
+                    resultsDiv.style.display = 'block';
+                    await fetchSatelliteImageWithGreeneryOverlay(latitude, longitude, propertyId);
+                } else {
+                    throw new Error('Invalid data received from API');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Unable to analyze greenery at this time. Please try again later.';
+                console.error('Error:', error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Show Greenery Analysis';
+                loadingOverlay.style.display = 'none';
+            }
+        }
+
+        async function fetchSatelliteImageWithGreeneryOverlay(latitude, longitude, propertyId) {
+            const imageUrl = `${serverUrl}/detect_greenery?latitude=${latitude}&longitude=${longitude}`;
+            const imageElement = document.getElementById(`greenery-image-${propertyId}`);
+            
+            return new Promise((resolve, reject) => {
+                imageElement.onload = () => {
+                    imageElement.style.display = 'block';
+                    resolve();
+                };
+                imageElement.onerror = () => {
+                    reject(new Error('Failed to load satellite image'));
+                };
+                imageElement.src = imageUrl;
+            });
+        }
+
+        function filterAndSortProperties() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const priceRange = document.getElementById('priceFilter').value;
+            const bedrooms = document.getElementById('bedroomFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            filteredProperties = properties.filter(property => {
+                const matchesSearch = property.title.toLowerCase().includes(searchTerm) ||
+                                    property.description.toLowerCase().includes(searchTerm);
+                
+                const matchesPrice = !priceRange || (() => {
+                    const [min, max] = priceRange.split('-').map(Number);
+                    if (max) return property.price >= min && property.price <= max;
+                    return property.price >= min;
+                })();
+
+                const matchesBedrooms = !bedrooms || (() => {
+                    if (bedrooms === '4+') return property.bedrooms >= 4;
+                    return property.bedrooms === parseInt(bedrooms);
+                })();
+
+                return matchesSearch && matchesPrice && matchesBedrooms;
+            });
+
+            if (sortBy) {
+                filteredProperties.sort((a, b) => {
+                    switch(sortBy) {
+                        case 'price-asc': return a.price - b.price;
+                        case 'price-desc': return b.price - a.price;
+                        case 'size-asc': return a.sqft - b.sqft;
+                        case 'size-desc': return b.sqft - a.sqft;
+                        default: return 0;
+                    }
+                });
+            }
+
+            renderProperties();
+        }
+
+        function renderProperties() {
+            const container = document.getElementById('properties-container');
+            container.innerHTML = '';
+            
+            if (filteredProperties.length === 0) {
+                container.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">No properties found matching your criteria.</p>';
+                return;
+            }
+
+            filteredProperties.forEach(property => {
+                container.appendChild(createPropertyCard(property));
+            });
+        }
+
+        // Event listeners for filters and search
+        document.getElementById('searchInput').addEventListener('input', filterAndSortProperties);
+        document.getElementById('priceFilter').addEventListener('change', filterAndSortProperties);
+        document.getElementById('bedroomFilter').addEventListener('change', filterAndSortProperties);
+        document.getElementById('sortBy').addEventListener('change', filterAndSortProperties);
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProperties();
+        });
+    </script>
+</body>
+</html>
