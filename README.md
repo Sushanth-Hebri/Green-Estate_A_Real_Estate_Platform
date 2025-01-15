@@ -23,9 +23,9 @@ The Green Vision API is used to:
 2. Fetch environmental details, such as greenery percentage and green space images.
 3. Display the fetched data alongside property information.
 
-###**Few_shots**
+**Few_shots**
 ![site1](https://github.com/Sushanth-Hebri/Green-Estate_A_Real_Estate_Platform/blob/main/site1.png)
 ![site2](https://github.com/Sushanth-Hebri/Green-Estate_A_Real_Estate_Platform/blob/main/site2.png)
-![site3](https://github.com/Sushanth-Hebri/Green-Estate_A_Real_Estate_Platform/blob/main/site3.png)
+
 
 
